@@ -69,6 +69,9 @@ def parse_args():
 
 	parser.add_argument("--sharpen", default=0, help="Set amount of sharpening applied to NeRF training images. Range 0.0 to 1.0.")
 
+	parser.add_argument("--save_rgb_slices", default="")
+	parser.add_argument("--rgb_slices_res", default=256, type=int)
+	parser.add_argument("--rgb_slices_depth", default=0.01, type=float)
 
 	return parser.parse_args()
 
@@ -272,6 +275,17 @@ if __name__ == "__main__":
 		thresh = args.marching_cubes_density_thresh or 2.5
 		print(f"Generating mesh via marching cubes and saving to {args.save_mesh}. Resolution=[{res},{res},{res}], Density Threshold={thresh}")
 		testbed.compute_and_save_marching_cubes_mesh(args.save_mesh, [res, res, res], thresh=thresh)
+
+	if args.save_rgb_slices:
+		res = args.rgb_slices_res or 256
+		depth = args.rgb_slices_depth or 0.01
+		print(f"Generating RGB slices and saving to {args.save_rgb_slices}. Resolution={res}, Range={range}, Depth={depth}")
+		path = Path(args.save_rgb_slices)
+		if path.exists() and any(path.iterdir()):
+			print(f"Directory {args.save_rgb_slices} exists and is non-empty. Not overwritting.")
+		else:
+			path.mkdir(parents=True, exist_ok=True)
+			_ = testbed.compute_and_save_rgba_slices(str(path), res, depth=depth)
 
 	if ref_transforms:
 		testbed.fov_axis = 0

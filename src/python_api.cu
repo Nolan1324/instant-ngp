@@ -456,6 +456,15 @@ PYBIND11_MODULE(pyngp, m) {
 			py::arg("flip_y_and_z_axes") = false,
 			"Compute & save a PNG file representing the 3D density or distance field from the current SDF or NeRF model. "
 		)
+		.def("compute_and_save_rgba_slices", &Testbed::compute_and_save_rgba_slices,
+			py::arg("filename"),
+			py::arg("resolution") = 256,
+			py::arg("aabb") = BoundingBox{},
+			py::arg("depth") = .01f,
+			py::arg("density_range") = 4.f,
+			py::arg("flip_y_and_z_axes") = false,
+			"Compute & save png files representing RGBA slices of layers from the current SDF or NeRF model. "
+		)
 		.def("compute_and_save_marching_cubes_mesh", &Testbed::compute_and_save_marching_cubes_mesh,
 			py::arg("filename"),
 			py::arg("resolution") = ivec3(256),

@@ -539,6 +539,26 @@ ivec3 Testbed::compute_and_save_png_slices(const fs::path& filename, int res, Bo
 	return res3d;
 }
 
+ivec3 Testbed::compute_and_save_rgba_slices(const fs::path& directory_name, int res, BoundingBox aabb, float depth, float density_range, bool flip_y_and_z_axes) {
+	mat3 render_aabb_to_local = mat3::identity();
+	if (aabb.is_empty()) {
+		aabb = m_testbed_mode == ETestbedMode::Nerf ? m_render_aabb : m_aabb;
+		render_aabb_to_local = m_render_aabb_to_local;
+	}
+	float range = density_range;
+	if (m_testbed_mode == ETestbedMode::Sdf) {
+		auto res3d = get_marching_cubes_res(res, aabb);
+		aabb.inflate(range * aabb.diag().x/res3d.x);
+	}
+	auto res3d = get_marching_cubes_res(res, aabb);
+
+	auto effective_view_dir = flip_y_and_z_axes ? vec3{0.0f, 1.0f, 0.0f} : vec3{0.0f, 0.0f, 1.0f};
+	GPUMemory<vec4> rgba = get_rgba_on_grid(res3d, effective_view_dir, true, depth);
+	save_rgba_grid_to_png_sequence(rgba, directory_name, res3d, flip_y_and_z_axes);
+
+	return res3d;
+}
+
 fs::path Testbed::root_dir() {
 	if (m_root_dir.empty()) {
 		set_root_dir(discover_root_dir());
